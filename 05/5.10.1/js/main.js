@@ -22,12 +22,15 @@ var x = d3.scaleLog()
     .base(10)
     .domain([142, 150000])
     .range([0, width]);
+
 var y = d3.scaleLinear()
-    .range([height, 0])
-    .domain([0, 90]);
+    .domain([0, 90])
+    .range([height, 0]);
+
 var area = d3.scaleLinear()
-    .range([25*Math.PI, 1500*Math.PI])
-    .domain([2000, 1400000000]);
+    .domain([2000, 1400000000])
+    .range([25*Math.PI, 1500*Math.PI]);
+
 //var continentColor = d3.scaleOrdinal(d3.schemePastel1);
 var continentColor = d3.scaleOrdinal().range(d3.schemePastel1);
 
@@ -87,14 +90,25 @@ d3.json("data/data.json").then(function(data){
     });
 
     var conts = [];
+    var maxLifeExp = -Infinity;
+    var maxIncome = -Infinity;
+    var minLifeExp = Infinity;
+    var minIncome = Infinity;
+
     data.forEach(d => {
         d.countries.forEach(c => {
-            if(conts.indexOf(c.continent) == -1) {
-                conts.push(c.continent);
-            }
-            
+            if(conts.indexOf(c.continent) == -1) conts.push(c.continent);
+            if(c.life_exp != null && maxLifeExp < Number(c.life_exp)) maxLifeExp = Number(c.life_exp);
+            if(c.income != null && maxIncome < Number(c.income)) maxIncome = Number(c.income);
+            if(c.life_exp != null && minLifeExp > Number(c.life_exp)) minLifeExp = Number(c.life_exp);
+            if(c.income != null && minIncome > Number(c.income)) minIncome = Number(c.income);
         })
     })
+
+    // console.log('life', minLifeExp, maxLifeExp);
+    // console.log('income', minIncome, maxIncome);
+    // x.domain([ minIncome, maxIncome ]);
+    // y.domain([ minLifeExp, maxLifeExp ]);
     
 
     continentColor = continentColor.domain(conts);
@@ -125,7 +139,7 @@ function update(data) {
 
     // EXIT old elements not present in new data.
     circles.exit()
-        .attr("class", "exit")
+        //.attr("class", "exit")
         .remove();
 
     // ENTER new elements present in new data.
