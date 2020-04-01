@@ -67,10 +67,17 @@ d3.json("data/revenues.json").then(function(data){
     });
 
     
-    console.log(data, data.slice(1));
+    
+    var count = 3;
+    var i =0;
     d3.interval(function(){
+        i++;
+        //if(count < i) return;
 
-        var newarr = [data[0], data[1], data[3], data[4], data[5], data[6]]
+        var newarr = [data[0], data[1], data[3], data[4], data[5], data[6], 
+            { month: 'August', revenue: 24631, profit: 17402 }, 
+            { month: 'September', revenue: 74151, profit:  50956}
+        ];
         var newData = flag ? data : newarr;
         update(newData);
         flag = !flag;
@@ -89,41 +96,44 @@ function update(data) {
     y.domain([0, d3.max(data, function(d) { return d[value] })])
 
     var xAxisCall = d3.axisBottom(x);
-    var yAxisCall = d3.axisLeft(y).tickFormat(d => flag ? "$" + d : d).ticks(5);
+    var yAxisCall = d3.axisLeft(y).tickFormat(d => "$" + d).ticks(5);
 
-    xAxisGroup.transition(t).call(xAxisCall);
-    yAxisGroup.transition(t).call(yAxisCall);
+    xAxisGroup
+        .transition(t)
+        .call(xAxisCall);
 
+    yAxisGroup
+        .transition(t)
+        .call(yAxisCall);
+
+    
 
     // Bars
-    var rects = g.selectAll("rect")
-        .data(data, d => d.month);
+    var rects = g.selectAll("circle")
+                    .data(data, d => d.month);
 
     rects.exit()
         .attr("fill", "red")
     .transition(t)
-        .attr("y", y(0))
-        .attr("height", 0)
+        .style('opacity', 0)
         .remove();
     
-    rects.transition(t)
-        .attr("y", function(d){ return y(d[value]); })
-        .attr("x", function(d){ return x(d.month) })
-        .attr("height", function(d){ return height - y(d[value]); })
-        .attr("width", x.bandwidth)
-
+        
+    
     rects.enter()
-        .append("rect")
-            .attr("x", function(d){ return x(d.month) })
-            .attr("width", x.bandwidth)
+        .append("circle")
+            .attr("cx", function(d){ return x(d.month) } )
+            .attr("cy", function(d){ return y(d[value]); })
+            .attr("r", d => x.bandwidth(d) / 10)
             .attr("fill", "grey")
-            .attr("y", y(0))
-            .attr("height", 0)
             // AND UPDATE old elements present in new data.
             .merge(rects)
+            .style('opacity', 0)
         .transition(t)
-            .attr("y", function(d){ return y(d[value]); })
-            .attr("height", function(d){ return height - y(d[value]); });
+            .attr("cx", function(d){ return x(d.month) })
+            .attr("cy", function(d){ return y(d[value]); })
+            .style('opacity', 1)
+            .attr("r", d => x.bandwidth(d) / 10)
             ;
 
     var yLabelVal = flag ? 'Revenu' : 'Profit' 
@@ -132,3 +142,64 @@ function update(data) {
     
 }
 
+
+// function update(data) {
+
+//     var value = flag ? 'revenue' : 'profit'
+//     x.domain(data.map(function(d){ return d.month }));
+//     y.domain([0, d3.max(data, function(d) { return d[value] })])
+
+//     var xAxisCall = d3.axisBottom(x);
+//     var yAxisCall = d3.axisLeft(y).tickFormat(d => "$" + d).ticks(5);
+
+//     xAxisGroup
+//         .transition(t)
+//         .call(xAxisCall);
+
+//     yAxisGroup
+//         .transition(t)
+//         .call(yAxisCall);
+
+    
+
+//     // Bars
+//     var rects = g.selectAll("rect")
+//                     .data(data, d => d.month);
+    
+//     console.log(rects)
+
+//     rects.exit()
+//         .attr("fill", "red")
+//     .transition(t)
+//         .attr("y", y(0))
+//         .attr("height", 0)
+//         .remove();
+    
+        
+    
+//     rects.enter()
+//         .append("rect")
+//             .attr("x", function(d){ return x(d.month) } )
+//             .attr("width", x.bandwidth)
+//             .attr("y", y(0))
+//             .attr("height", 0)
+//             .attr("fill", "grey")
+//             // AND UPDATE old elements present in new data.
+//             .merge(rects)
+//         .transition(t)
+//             .attr("x", function(d){ return x(d.month) })
+//             .attr("width", x.bandwidth)
+//             .attr("y", function(d){ return y(d[value]); })
+//             .attr("height", function(d){ return height - y(d[value]); });
+//             ;
+
+//     var yLabelVal = flag ? 'Revenu' : 'Profit' 
+//     yLabel.text(yLabelVal);
+
+    
+// }
+
+
+function init(data) {
+
+}

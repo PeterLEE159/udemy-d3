@@ -13,23 +13,23 @@ var g = d3.select("#chart-area")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
     .append("g")
-        .attr("transform", "translate(" + margin.left + 
-            ", " + margin.top + ")");
+        .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
 
 var time = 0;
 
 // Scales
 var x = d3.scaleLog()
     .base(10)
-    .range([0, width])
-    .domain([142, 150000]);
+    .domain([142, 150000])
+    .range([0, width]);
 var y = d3.scaleLinear()
     .range([height, 0])
     .domain([0, 90]);
 var area = d3.scaleLinear()
     .range([25*Math.PI, 1500*Math.PI])
     .domain([2000, 1400000000]);
-var continentColor = d3.scaleOrdinal(d3.schemePastel1);
+//var continentColor = d3.scaleOrdinal(d3.schemePastel1);
+var continentColor = d3.scaleOrdinal().range(d3.schemePastel1);
 
 // Labels
 var xLabel = g.append("text")
@@ -56,7 +56,8 @@ var timeLabel = g.append("text")
 // X Axis
 var xAxisCall = d3.axisBottom(x)
     .tickValues([400, 4000, 40000])
-    .tickFormat(d3.format("$"));
+    .tickFormat(d3.format("$"))
+    .ticks(4);
 g.append("g")
     .attr("class", "x axis")
     .attr("transform", "translate(0," + height +")")
@@ -69,11 +70,12 @@ g.append("g")
     .attr("class", "y axis")
     .call(yAxisCall);
 
+
 d3.json("data/data.json").then(function(data){
     console.log(data);
 
     // Clean data
-    const formattedData = data.map(function(year){
+    var formattedData = data.map(function(year){
         return year["countries"].filter(function(country){
             var dataExists = (country.income && country.life_exp);
             return dataExists
@@ -84,11 +86,27 @@ d3.json("data/data.json").then(function(data){
         })
     });
 
+    var conts = [];
+    data.forEach(d => {
+        d.countries.forEach(c => {
+            if(conts.indexOf(c.continent) == -1) {
+                conts.push(c.continent);
+            }
+            
+        })
+    })
+    
+
+    continentColor = continentColor.domain(conts);
     // Run the code every 0.1 second
+    var i =0 ;
     d3.interval(function(){
         // At the end of our data, loop back
+        
         time = (time < 214) ? time+1 : 0
         update(formattedData[time]);            
+        
+
     }, 100);
 
     // First run of the visualization
@@ -98,9 +116,8 @@ d3.json("data/data.json").then(function(data){
 
 function update(data) {
     // Standard transition time for the visualization
-    var t = d3.transition()
-        .duration(100);
-
+    
+    var t = d3.transition().duration(100);
     // JOIN new data with old elements.
     var circles = g.selectAll("circle").data(data, function(d){
         return d.country;
@@ -119,7 +136,7 @@ function update(data) {
         .merge(circles)
         .transition(t)
             .attr("cy", function(d){ return y(d.life_exp); })
-            .attr("cx", function(d){ return x(d.income) })
+            .attr("cx", function(d){  return x(d.income); })
             .attr("r", function(d){ return Math.sqrt(area(d.population) / Math.PI) });
 
     // Update the time label
