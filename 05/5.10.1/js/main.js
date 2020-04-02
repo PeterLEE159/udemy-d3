@@ -58,9 +58,9 @@ var timeLabel = g.append("text")
 
 // X Axis
 var xAxisCall = d3.axisBottom(x)
-    .tickValues([400, 4000, 40000])
-    .tickFormat(d3.format("$"))
-    .ticks(4);
+    .tickValues([400, 4000, 150000])
+    .tickFormat(d3.format("$"));
+    
 g.append("g")
     .attr("class", "x axis")
     .attr("transform", "translate(0," + height +")")
@@ -105,10 +105,9 @@ d3.json("data/data.json").then(function(data){
         })
     })
 
-    // console.log('life', minLifeExp, maxLifeExp);
-    // console.log('income', minIncome, maxIncome);
-    // x.domain([ minIncome, maxIncome ]);
-    // y.domain([ minLifeExp, maxLifeExp ]);
+
+    x.domain([ minIncome, maxIncome ]);
+    y.domain([ minLifeExp, maxLifeExp ]);
     
 
     continentColor = continentColor.domain(conts);
