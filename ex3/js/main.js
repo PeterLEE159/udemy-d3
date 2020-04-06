@@ -1,7 +1,7 @@
 /*
 *    main.js
 *    Mastering Data Visualization with D3.js
-*    6.8 - Line graphs in D3
+*    CoinStats
 */
 
 var margin = { left:80, right:100, top:50, bottom:100 },
@@ -13,15 +13,13 @@ var svg = d3.select("#chart-area").append("svg")
     .attr("height", height + margin.top + margin.bottom);
 
 var g = svg.append("g")
-    .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+    .attr("transform", "translate(" + margin.left + 
+        ", " + margin.top + ")");
 
 // Time parser for x-scale
 var parseTime = d3.timeParse("%Y");
 // For tooltip
 var bisectDate = d3.bisector(function(d) { return d.year; }).left;
-
-console.log(d3.bisector);
-
 
 // Scales
 var x = d3.scaleTime().range([0, width]);
@@ -44,9 +42,9 @@ var yAxis = g.append("g")
 yAxis.append("text")
     .attr("class", "axis-title")
     .attr("transform", "rotate(-90)")
-    .attr("y", 12)
-    //.attr("dy", ".71em")
-    //.style("text-anchor", "end")
+    .attr("y", 6)
+    .attr("dy", ".71em")
+    .style("text-anchor", "end")
     .attr("fill", "#5D6971")
     .text("Population)");
 
@@ -57,7 +55,7 @@ var line = d3.line()
 
 d3.json("data/example.json").then(function(data) {
     // Data cleaning
-    data.forEach(function(d) {  
+    data.forEach(function(d) {
         d.year = parseTime(d.year);
         d.value = +d.value;
     });
