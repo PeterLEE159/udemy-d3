@@ -4,6 +4,10 @@
 *    6.8 - Line graphs in D3
 */
 
+
+
+
+
 var margin = { left:80, right:100, top:50, bottom:100 },
     height = 500 - margin.top - margin.bottom, 
     width = 800 - margin.left - margin.right;
@@ -19,8 +23,7 @@ var g = svg.append("g")
 var parseTime = d3.timeParse("%Y");
 // For tooltip
 var bisectDate = d3.bisector(function(d) { return d.year; }).left;
-
-console.log(d3.bisector);
+// bisectDate(data, x0, 1) # arg1: data_array, arg2: x_val, arg2: ??
 
 
 // Scales
@@ -28,8 +31,8 @@ var x = d3.scaleTime().range([0, width]);
 var y = d3.scaleLinear().range([height, 0]);
 
 // Axis generators
-var xAxisCall = d3.axisBottom()
-var yAxisCall = d3.axisLeft()
+var xAxisCall = d3.axisBottom(x)
+var yAxisCall = d3.axisLeft(y)
     .ticks(6)
     .tickFormat(function(d) { return parseInt(d / 1000) + "k"; });
 
@@ -64,12 +67,11 @@ d3.json("data/example.json").then(function(data) {
 
     // Set scale domains
     x.domain(d3.extent(data, function(d) { return d.year; }));
-    y.domain([d3.min(data, function(d) { return d.value; }) / 1.005, 
-        d3.max(data, function(d) { return d.value; }) * 1.005]);
+    y.domain([d3.min(data, function(d) { return d.value; }) / 1.005, d3.max(data, function(d) { return d.value; }) * 1.005]);
 
     // Generate axes once scales have been set
-    xAxis.call(xAxisCall.scale(x))
-    yAxis.call(yAxisCall.scale(y))
+    xAxis.call(xAxisCall)
+    yAxis.call(yAxisCall)
 
     // Add line to chart
     g.append("path")
@@ -116,6 +118,7 @@ d3.json("data/example.json").then(function(data) {
             d0 = data[i - 1],
             d1 = data[i],
             d = x0 - d0.year > d1.year - x0 ? d1 : d0;
+        console.log(i, x0, d.year);
         focus.attr("transform", "translate(" + x(d.year) + "," + y(d.value) + ")");
         focus.select("text").text(d.value);
         focus.select(".x-hover-line").attr("y2", height - y(d.value));

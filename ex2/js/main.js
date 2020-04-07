@@ -1,3 +1,14 @@
+(() => {
+	var q = [1,2,3,4,5];
+	var scale = d3.scaleTime()
+		.domain([new Date(2020, 3, 1), new Date(2020, 4, 1)])
+		.range([1, 10]);
+
+	console.log(scale(new Date(2020, 3, 5)), scale.invert(5.7));
+
+
+})();
+
 /*
 *    main.js
 *    Mastering Data Visualization with D3.js
