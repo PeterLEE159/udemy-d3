@@ -28,11 +28,11 @@ setTimeout(() => {
         if(!top) top = 0;
         return 'translate(' + left + ', ' + top + ')';
     }
-    var margin = { top: 30, right: 20, bottom: 100, left: 100 };
+    var margin = { top: 30, right: 50, bottom: 100, left: 100 };
 
     var t = d3.transition().duration(500);
 
-    var width = 800 - margin.left - margin.right,
+    var width = 1200 - margin.left - margin.right,
         height = 600 - margin.top - margin.bottom;
 
     var formatTime = d3.timeFormat("%d/%m/%Y");
@@ -63,15 +63,14 @@ setTimeout(() => {
         .attr('font-size', '18px')
         .text('Year')
 
-    var x = d3.scaleLinear()
+    var x = d3.scaleTime()
                 .range([0, width]);
 
     var y = d3.scaleLinear()
                 .range([height, 0]);
 
     var xAxisCall = d3.axisBottom(x)
-                    .tickFormat(d => new Date(d).getFullYear())
-                    .ticks(3);
+                    .ticks(5);
 
     var yAxisCall = d3.axisLeft(y)
                     //.tickFormat(d => (d / 1000).toFixed(1) + 'K');
@@ -101,22 +100,13 @@ setTimeout(() => {
         .on('mousemove', mousemove);
 
     
-    
-    
-    gPopper.append('circle')
-            .attr('r', 10)
-            .attr('fill', 'white')
-            .attr('stroke', 'grey')
-            .attr('stroke-width', 2);
-
-
     gPopper.append('line')
             .attr('class', 'yline')
             .attr('x1', 0)
             .attr('x2', 0)
             .attr('stroke-width', '1px')
             .attr('stroke', 'grey')
-            //.attr('stroke-dasharray', '3,3')
+            .attr('stroke-dasharray', '3,3')
 
     gPopper.append('line')
             .attr('class', 'xline')
@@ -124,6 +114,22 @@ setTimeout(() => {
             .attr('y2', 0)
             .attr('stroke-width', '1px')
             .attr('stroke', 'grey')
+            .attr('stroke-dasharray', '3,3')
+    
+    gPopper.append('circle')
+            .attr('r', 10)
+            .attr('fill', 'white')
+            .attr('stroke', 'grey')
+            .attr('stroke-width', 2);
+
+    gPopper.append('text')
+            .attr('x', 15)
+            .attr('y', 5)
+            .attr('fill', 'grey')
+            .attr('font-size', 12);
+
+
+    
             //.attr('stroke-dasharray', '3,3')
     
             // .attr('stroke', 'grey')
@@ -153,8 +159,10 @@ setTimeout(() => {
         prevD = d;
         var yval = $("#var-select").val()
         gPopper.attr('transform', $translate(x(d.date), y(d[yval])));
-        gPopper.select('yline').attr('x2', -y(d[yval]));
-        gPopper.select('xline').attr('y2', -x(d.date));
+        gPopper.select('.xline').attr('y2', height - y(d[yval]));
+        gPopper.select('.yline').attr('x2', -x(d.date));
+        gPopper.select('text').text(d[yval]);
+        
         
     }
     

@@ -37,7 +37,9 @@
         z = d3.scaleOrdinal(d3.schemeCategory20);
 
     var stack = d3.stack();
-
+    // d3.stack().keys([...])(data), data generator
+    // required parameter: aggregation_key_array, target_data
+    // return value: grouped array accordingly input index and stack
     var area = d3.area()
         .x(function(d) { return x(d.data.date); })
         .y0(function(d) { return y(d[0]); })
@@ -54,10 +56,6 @@
         x.domain(d3.extent(data, function(d) { return d.date; }));
         z.domain(keys);
         stack.keys(keys);
-
-        console.log(data)
-        console.log(stack(data))
-
         var layer = g.selectAll(".layer")
             .data(stack(data))
             .enter().append("g")

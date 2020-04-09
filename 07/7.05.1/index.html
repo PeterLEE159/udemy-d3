@@ -86,12 +86,14 @@
 
         stack.order(d3.stackOrderNone);
         stack.offset(d3.stackOffsetNone);
-
+        console.log(data);
+        console.log(keys, stack(data));
         var browser = svg.selectAll('.browser')
             .data(stack(data))
-            .enter().append('g')
-            .attr('class', function(d){ return 'browser ' + d.key; })
-            .attr('fill-opacity', 0.5);
+            .enter()
+                .append('g')
+                .attr('class', function(d){ return 'browser ' + d.key; })
+                .attr('fill-opacity', 0.5);
 
         browser.append('path')
             .attr('class', 'area')
