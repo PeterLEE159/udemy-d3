@@ -30,6 +30,8 @@
         height = 400,
         radius = Math.min(width, height) / 2;
 
+    var t = d3.transition().duration(750);
+
     //d3.scale.category20()
     var color = d3.scaleOrdinal(d3.schemeCategory20);
 
@@ -51,12 +53,18 @@
     d3.tsv("data/donut2.tsv", type, function(error, data) {
         console.log(data)
         
+        /*
+            nesting 파라미터
+                1. 대상데이터    - entries()
+                2. 키값           d => d.??  
+
+        */
         var regionsByFruit = d3.nest()
             .key(function(d) { return d.fruit; })
             .entries(data)
             .reverse();
 
-        console.log(regionsByFruit)
+        console.log(regionsByFruit);
 
         var label = d3.select("form").selectAll("label")
             .data(regionsByFruit)
@@ -75,35 +83,40 @@
             .text(function(d) { return d.key; });
 
         function change(region) {
+
             var path = svg.selectAll("path");
 
-            var data0 = path.data(),
-                data1 = pie(region.values);
+            var data0 = path.data(),            // old selector
+                data1 = pie(region.values);     // new selector
 
             // JOIN elements with new data.
+
             path = path.data(data1, key);
 
+            
             // EXIT old elements from the screen.
             path.exit()
-                .datum(function(d, i) { return findNeighborArc(i, data1, data0, key) || d; })
-                .transition()
-                .duration(750)
-                .attrTween("d", arcTween)
-                .remove();
+                .each(function(d, i) { return findNeighborArc(i, data1, data0) || d; })
+                .transition(t)
+                    .attrTween("d", arcTween)
+                    .remove();
             
             // UPDATE elements still on the screen.
-            path.transition()
-                .duration(750)
-                .attrTween("d", arcTween);
+            path.transition(t)
+                    .attrTween("d", arcTween);
 
             // ENTER new elements in the array.
             path.enter()
                 .append("path")
-                .each(function(d, i) { this._current = findNeighborArc(i, data0, data1, key) || d; }) 
+                .each(function(d, i) { this._current = findNeighborArc(i, data0, data1) || d; }) 
                 .attr("fill", function(d) {  return color(d.data.region) })
-                .transition()
-                .duration(750)
-                    .attrTween("d", arcTween);
+                .transition(t)
+                    // .attrTween("d", (d, idx) => {
+                    //     var interpolator = d3.interpolate(this._current, d);
+                    //     this._current = d;
+                    //     return t => arc(interpolator(t));
+                    // });
+                    .attrTween('d', arcTween)
 
         }
     });
@@ -117,38 +130,42 @@
         return d;
     }
 
-    function findNeighborArc(i, data0, data1, key) {
-        var d;
-        return (d = findPreceding(i, data0, data1, key)) ? {startAngle: d.endAngle, endAngle: d.endAngle}
-            : (d = findFollowing(i, data0, data1, key)) ? {startAngle: d.startAngle, endAngle: d.startAngle}
-            : null;
-    }
-
-    // Find the element in data0 that joins the highest preceding element in data1.
-    function findPreceding(i, data0, data1, key) {
-        var m = data0.length;
-        while (--i >= 0) {
-            var k = key(data1[i]);
-            for (var j = 0; j < m; ++j) {
-                if (key(data0[j]) === k) return data0[j];
+    function findNeighborArc(i, data0, data1) {
+        
+        // Find the element in data0 that joins the highest preceding element in data1.
+        function findPreceding(i, data0, data1) {
+            var m = data0.length;
+            while (--i >= 0) {
+                var k = key(data1[i]);
+                for (var j = 0; j < m; ++j) {
+                    if (key(data0[j]) === k) return data0[j];
+                }
             }
         }
-    }
 
-    // Find the element in data0 that joins the lowest following element in data1.
-    function findFollowing(i, data0, data1, key) {
-        var n = data1.length, m = data0.length;
-        while (++i < n) {
-            var k = key(data1[i]);
-            for (var j = 0; j < m; ++j) {
-                if (key(data0[j]) === k) return data0[j];
+        // Find the element in data0 that joins the lowest following element in data1.
+        function findFollowing(i, data0, data1) {
+            var n = data1.length, m = data0.length;
+            while (++i < n) {
+                var k = key(data1[i]);
+                for (var j = 0; j < m; ++j) {
+                    if (key(data0[j]) === k) return data0[j];
+                }
             }
         }
-    }
 
+        var d = findPreceding(i, data0, data1);
+        if(d) return {startAngle: d.endAngle, endAngle: d.endAngle};
+
+        d = findFollowing(i, data0, data1);
+        if(d) return {startAngle: d.startAngle, endAngle: d.startAngle};
+    }
+    
+    
+    // 신규생성, 업데이트, 삭제
     function arcTween(d) {
-        var i = d3.interpolate(this._current, d);
-        this._current = i(1)
+        var i = d3.interpolate(this._current, d); // this._current 신규 시점: 
+        this._current = i(1);
         return function(t) { return arc(i(t)); };
     }
 
